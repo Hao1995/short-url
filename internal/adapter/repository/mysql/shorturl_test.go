@@ -109,7 +109,7 @@ func (s *ShortUrlTestSuite) TestCreate() {
 				ExpiredAt: now(),
 			},
 			expID:  "",
-			expErr: ErrDuplicatedKey,
+			expErr: domain.ErrDuplicatedKey,
 		},
 	} {
 		s.Suite.Run(t.name, func() {
@@ -151,7 +151,7 @@ func (s *ShortUrlTestSuite) TestGet() {
 			name:   "record not found",
 			req:    "testid1",
 			expUrl: "",
-			expErr: ErrRecordNotFound,
+			expErr: domain.ErrRecordNotFound,
 		},
 	} {
 		s.Suite.Run(t.name, func() {

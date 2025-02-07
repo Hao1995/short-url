@@ -15,9 +15,6 @@ var (
 	now = func() time.Time {
 		return time.Now()
 	}
-
-	ErrDuplicatedKey  = errors.New("duplicated key")
-	ErrRecordNotFound = errors.New("record not found")
 )
 
 type ShortUrlRepository struct {
@@ -42,7 +39,7 @@ func (repo *ShortUrlRepository) Create(ctx context.Context, createDto *domain.Cr
 
 	if result := repo.db.Create(&record); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return "", ErrDuplicatedKey
+			return "", domain.ErrDuplicatedKey
 		}
 		log.Printf("failed to create short_url: %s", result.Error)
 		return "", result.Error
@@ -55,7 +52,7 @@ func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (string, err
 	var record ShortUrl
 	if result := repo.db.Where("target_id = ?", id).Select("url").First(&record); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return "", ErrRecordNotFound
+			return "", domain.ErrRecordNotFound
 		}
 		log.Printf("failed to get short_url by id(%s): %s", id, result.Error)
 		return "", result.Error
