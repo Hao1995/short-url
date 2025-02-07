@@ -7,3 +7,8 @@ type CreateDto struct {
 	TargetID  string
 	ExpiredAt time.Time
 }
+
+type ShortUrlDto struct {
+	Url       string
+	ExpiredAt time.Time
+}

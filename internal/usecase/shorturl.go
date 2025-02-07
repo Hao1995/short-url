@@ -4,8 +4,15 @@ import (
 	"context"
 	"fmt"
 	"hash/crc32"
+	"time"
 
 	"github.com/Hao1995/short-url/internal/domain"
+)
+
+var (
+	now = func() time.Time {
+		return time.Now().UTC()
+	}
 )
 
 type ShortUrlUseCase struct {
@@ -27,10 +34,15 @@ func (uc *ShortUrlUseCase) Create(ctx context.Context, createDto *domain.CreateD
 	return id, nil
 }
 
-func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (string, error) {
-	id, err := uc.repo.Get(ctx, id)
+func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (*domain.ShortUrlDto, error) {
+	obj, err := uc.repo.Get(ctx, id)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return id, nil
+
+	if obj.ExpiredAt.Before(now()) {
+		return nil, domain.ErrExpired
+	}
+
+	return obj, nil
 }

@@ -16,6 +16,7 @@ import (
 type ShortUrlUseCaseTestSuite struct {
 	suite.Suite
 	ctx context.Context
+	now time.Time
 
 	repo *usecase.UseCase
 	impl UseCase
@@ -26,6 +27,11 @@ func TestShortUrlUseCaseTestSuite(t *testing.T) {
 }
 
 func (s *ShortUrlUseCaseTestSuite) SetupSuite() {
+	s.now = time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC)
+	now = func() time.Time {
+		return s.now
+	}
+
 	s.repo = usecase.NewUseCase(s.T())
 	s.impl = NewShortUrlUseCase(s.repo)
 }
@@ -70,12 +76,12 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 			req: &domain.CreateDto{
 				Url:       "https://example.com/whatever2",
 				TargetID:  "testid1",
-				ExpiredAt: time.Now(),
+				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 			},
 			setup: func() {
-				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1")))
+				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever2")))
 				s.repo.On("Create", s.ctx, &domain.CreateDto{
-					Url:       "https://example.com/whatever1",
+					Url:       "https://example.com/whatever2",
 					TargetID:  targetID,
 					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("", domain.ErrDuplicatedKey)
@@ -92,6 +98,51 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 			id, err := s.impl.Create(ctx, t.req)
 			s.ErrorIs(err, t.expErr)
 			s.Equal(t.expID, id)
+		})
+	}
+}
+
+func (s *ShortUrlUseCaseTestSuite) TestGet() {
+	for _, t := range []struct {
+		name   string
+		req    string
+		setup  func()
+		expObj *domain.ShortUrlDto
+		expErr error
+	}{
+		{
+			name: "create record successfully",
+			req:  "testid1",
+			setup: func() {
+				s.repo.On("Get", s.ctx, "testid1").Once().Return(&domain.ShortUrlDto{
+					Url:       "https://example.com/whatever1",
+					ExpiredAt: time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC),
+				}, nil)
+			},
+			expObj: &domain.ShortUrlDto{
+				Url:       "https://example.com/whatever1",
+				ExpiredAt: time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC),
+			},
+			expErr: nil,
+		},
+		{
+			name: "failed to create record due to duplicated target_id",
+			req:  "testid2",
+			setup: func() {
+				s.repo.On("Get", s.ctx, "testid2").Once().Return(nil, domain.ErrExpired)
+			},
+			expObj: nil,
+			expErr: domain.ErrExpired,
+		},
+	} {
+		s.Suite.Run(t.name, func() {
+			ctx := context.Background()
+			if t.setup != nil {
+				t.setup()
+			}
+			obj, err := s.impl.Get(ctx, t.req)
+			s.ErrorIs(err, t.expErr)
+			s.Equal(t.expObj, obj)
 		})
 	}
 }

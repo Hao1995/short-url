@@ -27,6 +27,8 @@ type ShortUrlTestSuite struct {
 	dockertestClose func() error
 	db              *gorm.DB
 
+	now time.Time
+
 	impl usecase.Repository
 }
 
@@ -46,19 +48,21 @@ func (s *ShortUrlTestSuite) SetupSuite() {
 		log.Fatal("failed to migrate DB", err)
 	}
 
+	// Connect to DB
 	s.db, err = gorm.Open(mysql.Open(dbDSN), &gorm.Config{TranslateError: true})
 	if err != nil {
 		log.Fatal("failed to init GORM connection", err)
 	}
 
 	s.impl = NewShortUrlRepository(s.db)
-
-	now = func() time.Time {
-		return time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC)
-	}
 }
 
-func (s *ShortUrlTestSuite) SetupTest() {}
+func (s *ShortUrlTestSuite) SetupTest() {
+	s.now = time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC)
+	now = func() time.Time {
+		return s.now
+	}
+}
 
 func (s *ShortUrlTestSuite) TearDownSubTest() {
 	s.db.Where("1=1").Delete(&ShortUrl{})
@@ -129,7 +133,7 @@ func (s *ShortUrlTestSuite) TestGet() {
 		name   string
 		req    string
 		setup  func()
-		expUrl string
+		exp    *domain.ShortUrlDto
 		expErr error
 	}{
 		{
@@ -138,19 +142,23 @@ func (s *ShortUrlTestSuite) TestGet() {
 				shortUrl := ShortUrl{
 					Url:       "https://example.com/whatever1",
 					TargetID:  "testid1",
-					ExpiredAt: now(),
-					CreatedAt: now(),
+					ExpiredAt: s.now,
+					CreatedAt: s.now,
 				}
 				s.Suite.Nil(s.db.Create(&shortUrl).Error)
+				fmt.Printf("test. obj=%+v\n", shortUrl)
 			},
-			req:    "testid1",
-			expUrl: "https://example.com/whatever1",
+			req: "testid1",
+			exp: &domain.ShortUrlDto{
+				Url:       "https://example.com/whatever1",
+				ExpiredAt: s.now,
+			},
 			expErr: nil,
 		},
 		{
 			name:   "record not found",
 			req:    "testid1",
-			expUrl: "",
+			exp:    nil,
 			expErr: domain.ErrRecordNotFound,
 		},
 	} {
@@ -159,9 +167,9 @@ func (s *ShortUrlTestSuite) TestGet() {
 			if t.setup != nil {
 				t.setup()
 			}
-			url, err := s.impl.Get(ctx, t.req)
+			obj, err := s.impl.Get(ctx, t.req)
 			s.ErrorIs(err, t.expErr)
-			s.Equal(t.expUrl, url)
+			s.Equal(t.exp, obj)
 		})
 	}
 }
@@ -191,7 +199,7 @@ func ConnectToDockerTestDB() (string, func() error, error) {
 	if err := pool.Retry(func() error {
 		// https://gorm.io/docs/connecting_to_the_database.html#MySQL
 		var err error
-		dsn = fmt.Sprintf("root:%s@tcp(localhost:%s)/mysql?charset=utf8mb4&parseTime=True&loc=Local", DB_PASSWORD, resource.GetPort("3306/tcp"))
+		dsn = fmt.Sprintf("root:%s@tcp(localhost:%s)/mysql?charset=utf8mb4&parseTime=True&loc=UTC", DB_PASSWORD, resource.GetPort("3306/tcp"))
 		db, err := sql.Open("mysql", dsn)
 		if err != nil {
 			return err

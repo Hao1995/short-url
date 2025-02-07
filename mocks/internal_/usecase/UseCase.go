@@ -80,22 +80,24 @@ func (_c *UseCase_Create_Call) RunAndReturn(run func(context.Context, *domain.Cr
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *UseCase) Get(ctx context.Context, id string) (string, error) {
+func (_m *UseCase) Get(ctx context.Context, id string) (*domain.ShortUrlDto, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 string
+	var r0 *domain.ShortUrlDto
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*domain.ShortUrlDto, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.ShortUrlDto); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(string)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.ShortUrlDto)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -126,12 +128,12 @@ func (_c *UseCase_Get_Call) Run(run func(ctx context.Context, id string)) *UseCa
 	return _c
 }
 
-func (_c *UseCase_Get_Call) Return(_a0 string, _a1 error) *UseCase_Get_Call {
+func (_c *UseCase_Get_Call) Return(_a0 *domain.ShortUrlDto, _a1 error) *UseCase_Get_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *UseCase_Get_Call) RunAndReturn(run func(context.Context, string) (string, error)) *UseCase_Get_Call {
+func (_c *UseCase_Get_Call) RunAndReturn(run func(context.Context, string) (*domain.ShortUrlDto, error)) *UseCase_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }

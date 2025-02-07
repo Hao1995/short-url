@@ -13,7 +13,7 @@ import (
 
 var (
 	now = func() time.Time {
-		return time.Now()
+		return time.Now().UTC()
 	}
 )
 
@@ -48,15 +48,20 @@ func (repo *ShortUrlRepository) Create(ctx context.Context, createDto *domain.Cr
 	return createDto.TargetID, nil
 }
 
-func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (string, error) {
+func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.ShortUrlDto, error) {
 	var record ShortUrl
-	if result := repo.db.Where("target_id = ?", id).Select("url").First(&record); result.Error != nil {
+	result := repo.db.Where("target_id = ?", id).Select([]string{"url", "expired_at"}).First(&record)
+	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return "", domain.ErrRecordNotFound
+			return nil, domain.ErrRecordNotFound
 		}
 		log.Printf("failed to get short_url by id(%s): %s", id, result.Error)
-		return "", result.Error
+		return nil, result.Error
 	}
 	log.Printf("get url `%s` by id `%s`", record.Url, id)
-	return record.Url, nil
+
+	return &domain.ShortUrlDto{
+		Url:       record.Url,
+		ExpiredAt: record.ExpiredAt,
+	}, nil
 }
