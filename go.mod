@@ -1,3 +1,3 @@
-module Hao1995/short-url
+module github.com/Hao1995/short-url
 
 go 1.23.5

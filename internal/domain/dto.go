@@ -1,4 +1,4 @@
-package shorturl
+package domain
 
 import "time"
 
