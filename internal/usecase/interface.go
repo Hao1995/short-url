@@ -7,11 +7,11 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, createDto *domain.CreateDto) (string, error)
-	Get(ctx context.Context, id string) (*domain.ShortUrlDto, error)
+	Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error)
+	Get(ctx context.Context, id string) (*domain.GetRespDto, error)
 }
 
 type UseCase interface {
-	Create(ctx context.Context, createDto *domain.CreateDto) (string, error)
-	Get(ctx context.Context, id string) (*domain.ShortUrlDto, error)
+	Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error)
+	Get(ctx context.Context, id string) (*domain.GetRespDto, error)
 }

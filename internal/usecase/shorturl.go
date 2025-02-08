@@ -19,22 +19,25 @@ type ShortUrlUseCase struct {
 	repo Repository
 }
 
+// NewShortUrlUseCase generates the use case implementation of the ShortUrl use case interface
 func NewShortUrlUseCase(repo Repository) UseCase {
 	return &ShortUrlUseCase{
 		repo: repo,
 	}
 }
 
-func (uc *ShortUrlUseCase) Create(ctx context.Context, createDto *domain.CreateDto) (string, error) {
-	createDto.TargetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(createDto.Url)))
-	id, err := uc.repo.Create(ctx, createDto)
+// Create creates short_url record and return short url id
+func (uc *ShortUrlUseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error) {
+	CreateReqDto.TargetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(CreateReqDto.Url)))
+	id, err := uc.repo.Create(ctx, CreateReqDto)
 	if err != nil {
 		return "", err
 	}
 	return id, nil
 }
 
-func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (*domain.ShortUrlDto, error) {
+// Get gets short url record by id
+func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (*domain.GetRespDto, error) {
 	obj, err := uc.repo.Get(ctx, id)
 	if err != nil {
 		return nil, err

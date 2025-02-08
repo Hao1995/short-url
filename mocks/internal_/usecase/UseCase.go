@@ -22,9 +22,9 @@ func (_m *UseCase) EXPECT() *UseCase_Expecter {
 	return &UseCase_Expecter{mock: &_m.Mock}
 }
 
-// Create provides a mock function with given fields: ctx, createDto
-func (_m *UseCase) Create(ctx context.Context, createDto *domain.CreateDto) (string, error) {
-	ret := _m.Called(ctx, createDto)
+// Create provides a mock function with given fields: ctx, CreateReqDto
+func (_m *UseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error) {
+	ret := _m.Called(ctx, CreateReqDto)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
@@ -32,17 +32,17 @@ func (_m *UseCase) Create(ctx context.Context, createDto *domain.CreateDto) (str
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateDto) (string, error)); ok {
-		return rf(ctx, createDto)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateReqDto) (string, error)); ok {
+		return rf(ctx, CreateReqDto)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateDto) string); ok {
-		r0 = rf(ctx, createDto)
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateReqDto) string); ok {
+		r0 = rf(ctx, CreateReqDto)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.CreateDto) error); ok {
-		r1 = rf(ctx, createDto)
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.CreateReqDto) error); ok {
+		r1 = rf(ctx, CreateReqDto)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -57,14 +57,14 @@ type UseCase_Create_Call struct {
 
 // Create is a helper method to define mock.On call
 //   - ctx context.Context
-//   - createDto *domain.CreateDto
-func (_e *UseCase_Expecter) Create(ctx interface{}, createDto interface{}) *UseCase_Create_Call {
-	return &UseCase_Create_Call{Call: _e.mock.On("Create", ctx, createDto)}
+//   - CreateReqDto *domain.CreateReqDto
+func (_e *UseCase_Expecter) Create(ctx interface{}, CreateReqDto interface{}) *UseCase_Create_Call {
+	return &UseCase_Create_Call{Call: _e.mock.On("Create", ctx, CreateReqDto)}
 }
 
-func (_c *UseCase_Create_Call) Run(run func(ctx context.Context, createDto *domain.CreateDto)) *UseCase_Create_Call {
+func (_c *UseCase_Create_Call) Run(run func(ctx context.Context, CreateReqDto *domain.CreateReqDto)) *UseCase_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*domain.CreateDto))
+		run(args[0].(context.Context), args[1].(*domain.CreateReqDto))
 	})
 	return _c
 }
@@ -74,29 +74,29 @@ func (_c *UseCase_Create_Call) Return(_a0 string, _a1 error) *UseCase_Create_Cal
 	return _c
 }
 
-func (_c *UseCase_Create_Call) RunAndReturn(run func(context.Context, *domain.CreateDto) (string, error)) *UseCase_Create_Call {
+func (_c *UseCase_Create_Call) RunAndReturn(run func(context.Context, *domain.CreateReqDto) (string, error)) *UseCase_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Get provides a mock function with given fields: ctx, id
-func (_m *UseCase) Get(ctx context.Context, id string) (*domain.ShortUrlDto, error) {
+func (_m *UseCase) Get(ctx context.Context, id string) (*domain.GetRespDto, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 *domain.ShortUrlDto
+	var r0 *domain.GetRespDto
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*domain.ShortUrlDto, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*domain.GetRespDto, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.ShortUrlDto); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.GetRespDto); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.ShortUrlDto)
+			r0 = ret.Get(0).(*domain.GetRespDto)
 		}
 	}
 
@@ -128,12 +128,12 @@ func (_c *UseCase_Get_Call) Run(run func(ctx context.Context, id string)) *UseCa
 	return _c
 }
 
-func (_c *UseCase_Get_Call) Return(_a0 *domain.ShortUrlDto, _a1 error) *UseCase_Get_Call {
+func (_c *UseCase_Get_Call) Return(_a0 *domain.GetRespDto, _a1 error) *UseCase_Get_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *UseCase_Get_Call) RunAndReturn(run func(context.Context, string) (*domain.ShortUrlDto, error)) *UseCase_Get_Call {
+func (_c *UseCase_Get_Call) RunAndReturn(run func(context.Context, string) (*domain.GetRespDto, error)) *UseCase_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -49,20 +49,20 @@ func (s *ShortUrlUseCaseTestSuite) TearDownSuite() {}
 func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 	for _, t := range []struct {
 		name   string
-		req    *domain.CreateDto
+		req    *domain.CreateReqDto
 		setup  func()
 		expID  string
 		expErr error
 	}{
 		{
 			name: "create record successfully",
-			req: &domain.CreateDto{
+			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever1",
 				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 			},
 			setup: func() {
 				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1")))
-				s.repo.On("Create", s.ctx, &domain.CreateDto{
+				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
 					Url:       "https://example.com/whatever1",
 					TargetID:  targetID,
 					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
@@ -73,14 +73,14 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 		},
 		{
 			name: "failed to create record due to duplicated target_id",
-			req: &domain.CreateDto{
+			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever2",
 				TargetID:  "testid1",
 				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 			},
 			setup: func() {
 				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever2")))
-				s.repo.On("Create", s.ctx, &domain.CreateDto{
+				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
 					Url:       "https://example.com/whatever2",
 					TargetID:  targetID,
 					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
@@ -107,19 +107,19 @@ func (s *ShortUrlUseCaseTestSuite) TestGet() {
 		name   string
 		req    string
 		setup  func()
-		expObj *domain.ShortUrlDto
+		expObj *domain.GetRespDto
 		expErr error
 	}{
 		{
 			name: "create record successfully",
 			req:  "testid1",
 			setup: func() {
-				s.repo.On("Get", s.ctx, "testid1").Once().Return(&domain.ShortUrlDto{
+				s.repo.On("Get", s.ctx, "testid1").Once().Return(&domain.GetRespDto{
 					Url:       "https://example.com/whatever1",
 					ExpiredAt: time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC),
 				}, nil)
 			},
-			expObj: &domain.ShortUrlDto{
+			expObj: &domain.GetRespDto{
 				Url:       "https://example.com/whatever1",
 				ExpiredAt: time.Date(2025, 3, 15, 0, 0, 0, 0, time.UTC),
 			},

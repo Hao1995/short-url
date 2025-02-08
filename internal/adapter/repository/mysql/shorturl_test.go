@@ -82,13 +82,13 @@ func (s *ShortUrlTestSuite) TestCreate() {
 	for _, t := range []struct {
 		name   string
 		setup  func()
-		req    *domain.CreateDto
+		req    *domain.CreateReqDto
 		expID  string
 		expErr error
 	}{
 		{
 			name: "create record successfully",
-			req: &domain.CreateDto{
+			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever1",
 				TargetID:  "testid1",
 				ExpiredAt: now(),
@@ -107,7 +107,7 @@ func (s *ShortUrlTestSuite) TestCreate() {
 				}
 				s.Suite.Nil(s.db.Create(&shortUrl).Error)
 			},
-			req: &domain.CreateDto{
+			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever2",
 				TargetID:  "testid1",
 				ExpiredAt: now(),
@@ -133,7 +133,7 @@ func (s *ShortUrlTestSuite) TestGet() {
 		name   string
 		req    string
 		setup  func()
-		exp    *domain.ShortUrlDto
+		exp    *domain.GetRespDto
 		expErr error
 	}{
 		{
@@ -149,7 +149,7 @@ func (s *ShortUrlTestSuite) TestGet() {
 				fmt.Printf("test. obj=%+v\n", shortUrl)
 			},
 			req: "testid1",
-			exp: &domain.ShortUrlDto{
+			exp: &domain.GetRespDto{
 				Url:       "https://example.com/whatever1",
 				ExpiredAt: s.now,
 			},

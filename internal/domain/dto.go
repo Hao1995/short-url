@@ -2,13 +2,13 @@ package domain
 
 import "time"
 
-type CreateDto struct {
+type CreateReqDto struct {
 	Url       string
 	TargetID  string
 	ExpiredAt time.Time
 }
 
-type ShortUrlDto struct {
+type GetRespDto struct {
 	Url       string
 	ExpiredAt time.Time
 }

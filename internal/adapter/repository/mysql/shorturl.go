@@ -28,12 +28,12 @@ func NewShortUrlRepository(db *gorm.DB) usecase.Repository {
 	}
 }
 
-// Create creates short_url record
-func (repo *ShortUrlRepository) Create(ctx context.Context, createDto *domain.CreateDto) (string, error) {
+// Create creates short_url record and return short url id
+func (repo *ShortUrlRepository) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error) {
 	record := ShortUrl{
-		Url:       createDto.Url,
-		TargetID:  createDto.TargetID,
-		ExpiredAt: createDto.ExpiredAt,
+		Url:       CreateReqDto.Url,
+		TargetID:  CreateReqDto.TargetID,
+		ExpiredAt: CreateReqDto.ExpiredAt,
 		CreatedAt: now(),
 	}
 
@@ -45,10 +45,11 @@ func (repo *ShortUrlRepository) Create(ctx context.Context, createDto *domain.Cr
 		return "", result.Error
 	}
 
-	return createDto.TargetID, nil
+	return CreateReqDto.TargetID, nil
 }
 
-func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.ShortUrlDto, error) {
+// Get gets short url record by id
+func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.GetRespDto, error) {
 	var record ShortUrl
 	result := repo.db.Where("target_id = ?", id).Select([]string{"url", "expired_at"}).First(&record)
 	if result.Error != nil {
@@ -60,7 +61,7 @@ func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.Sho
 	}
 	log.Printf("get url `%s` by id `%s`", record.Url, id)
 
-	return &domain.ShortUrlDto{
+	return &domain.GetRespDto{
 		Url:       record.Url,
 		ExpiredAt: record.ExpiredAt,
 	}, nil
