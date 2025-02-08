@@ -12,6 +12,6 @@ type Repository interface {
 }
 
 type UseCase interface {
-	Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error)
+	Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (*domain.CreateRespDto, error)
 	Get(ctx context.Context, id string) (*domain.GetRespDto, error)
 }

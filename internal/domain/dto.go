@@ -8,6 +8,11 @@ type CreateReqDto struct {
 	ExpiredAt time.Time
 }
 
+type CreateRespDto struct {
+	TargetID string
+	ShortUrl string
+}
+
 type GetRespDto struct {
 	Url       string
 	ExpiredAt time.Time

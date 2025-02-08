@@ -23,22 +23,24 @@ func (_m *UseCase) EXPECT() *UseCase_Expecter {
 }
 
 // Create provides a mock function with given fields: ctx, CreateReqDto
-func (_m *UseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error) {
+func (_m *UseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (*domain.CreateRespDto, error) {
 	ret := _m.Called(ctx, CreateReqDto)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
 	}
 
-	var r0 string
+	var r0 *domain.CreateRespDto
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateReqDto) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateReqDto) (*domain.CreateRespDto, error)); ok {
 		return rf(ctx, CreateReqDto)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateReqDto) string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.CreateReqDto) *domain.CreateRespDto); ok {
 		r0 = rf(ctx, CreateReqDto)
 	} else {
-		r0 = ret.Get(0).(string)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.CreateRespDto)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *domain.CreateReqDto) error); ok {
@@ -69,12 +71,12 @@ func (_c *UseCase_Create_Call) Run(run func(ctx context.Context, CreateReqDto *d
 	return _c
 }
 
-func (_c *UseCase_Create_Call) Return(_a0 string, _a1 error) *UseCase_Create_Call {
+func (_c *UseCase_Create_Call) Return(_a0 *domain.CreateRespDto, _a1 error) *UseCase_Create_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *UseCase_Create_Call) RunAndReturn(run func(context.Context, *domain.CreateReqDto) (string, error)) *UseCase_Create_Call {
+func (_c *UseCase_Create_Call) RunAndReturn(run func(context.Context, *domain.CreateReqDto) (*domain.CreateRespDto, error)) *UseCase_Create_Call {
 	_c.Call.Return(run)
 	return _c
 }

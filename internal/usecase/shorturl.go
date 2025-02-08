@@ -9,6 +9,10 @@ import (
 	"github.com/Hao1995/short-url/internal/domain"
 )
 
+const (
+	BASE_URL = "http:localhost/%s"
+)
+
 var (
 	now = func() time.Time {
 		return time.Now().UTC()
@@ -27,13 +31,16 @@ func NewShortUrlUseCase(repo Repository) UseCase {
 }
 
 // Create creates short_url record and return short url id
-func (uc *ShortUrlUseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (string, error) {
+func (uc *ShortUrlUseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (*domain.CreateRespDto, error) {
 	CreateReqDto.TargetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(CreateReqDto.Url)))
 	id, err := uc.repo.Create(ctx, CreateReqDto)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return id, nil
+	return &domain.CreateRespDto{
+		TargetID: id,
+		ShortUrl: fmt.Sprintf(BASE_URL, id),
+	}, nil
 }
 
 // Get gets short url record by id

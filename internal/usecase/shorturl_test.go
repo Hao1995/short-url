@@ -18,7 +18,7 @@ type ShortUrlUseCaseTestSuite struct {
 	ctx context.Context
 	now time.Time
 
-	repo *usecase.UseCase
+	repo *usecase.Repository
 	impl UseCase
 }
 
@@ -32,7 +32,7 @@ func (s *ShortUrlUseCaseTestSuite) SetupSuite() {
 		return s.now
 	}
 
-	s.repo = usecase.NewUseCase(s.T())
+	s.repo = usecase.NewRepository(s.T())
 	s.impl = NewShortUrlUseCase(s.repo)
 }
 
@@ -51,7 +51,7 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 		name   string
 		req    *domain.CreateReqDto
 		setup  func()
-		expID  string
+		exp    *domain.CreateRespDto
 		expErr error
 	}{
 		{
@@ -68,7 +68,10 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("testid1", nil)
 			},
-			expID:  "testid1",
+			exp: &domain.CreateRespDto{
+				TargetID: "testid1",
+				ShortUrl: "http:localhost/testid1",
+			},
 			expErr: nil,
 		},
 		{
@@ -86,7 +89,7 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("", domain.ErrDuplicatedKey)
 			},
-			expID:  "",
+			exp:    nil,
 			expErr: domain.ErrDuplicatedKey,
 		},
 	} {
@@ -97,7 +100,7 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 			}
 			id, err := s.impl.Create(ctx, t.req)
 			s.ErrorIs(err, t.expErr)
-			s.Equal(t.expID, id)
+			s.Equal(t.exp, id)
 		})
 	}
 }
