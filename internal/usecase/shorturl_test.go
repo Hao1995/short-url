@@ -70,7 +70,7 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 			},
 			exp: &domain.CreateRespDto{
 				TargetID: "testid1",
-				ShortUrl: "http:localhost/testid1",
+				ShortUrl: "http://localhost/testid1",
 			},
 			expErr: nil,
 		},

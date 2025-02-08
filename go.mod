@@ -3,6 +3,8 @@ module github.com/Hao1995/short-url
 go 1.23.5
 
 require (
+	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
 	github.com/gin-gonic/gin v1.10.0
 	github.com/ory/dockertest/v3 v3.11.0
 	github.com/pressly/goose/v3 v3.24.1
@@ -19,6 +21,7 @@ require (
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/caarlos0/env/v11 v11.3.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect

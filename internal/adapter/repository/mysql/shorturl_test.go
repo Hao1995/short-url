@@ -10,8 +10,9 @@ import (
 
 	"github.com/Hao1995/short-url/internal/domain"
 	"github.com/Hao1995/short-url/internal/usecase"
+	"github.com/Hao1995/short-url/pkg/migrationkit"
+
 	"github.com/ory/dockertest/v3"
-	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -19,7 +20,7 @@ import (
 
 const (
 	DB_PASSWORD    = "password"
-	MIGRATION_PATH = "../../../../cmd/shorturl/migration"
+	MIGRATION_PATH = "../../../../database/migration"
 )
 
 type ShortUrlTestSuite struct {
@@ -44,7 +45,7 @@ func (s *ShortUrlTestSuite) SetupSuite() {
 		log.Fatal("failed to connect to docker test DB", err)
 	}
 
-	if err := GooseMigrate(dbDSN); err != nil {
+	if err := migrationkit.GooseMigrate(dbDSN, MIGRATION_PATH); err != nil {
 		log.Fatal("failed to migrate DB", err)
 	}
 
@@ -213,18 +214,4 @@ func ConnectToDockerTestDB() (string, func() error, error) {
 	return dsn, func() error {
 		return pool.Purge(resource)
 	}, nil
-}
-
-func GooseMigrate(dbString string) error {
-	db, err := goose.OpenDBWithDriver("mysql", dbString)
-	if err != nil {
-		return fmt.Errorf("sql connection failed: %s", err)
-	}
-
-	ctx := context.Background()
-	if err := goose.RunContext(ctx, "up", db, MIGRATION_PATH); err != nil {
-		return fmt.Errorf("goose up: %v", err)
-	}
-
-	return nil
 }

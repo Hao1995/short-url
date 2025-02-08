@@ -12,3 +12,9 @@ generate:
 	go generate ./...
 	# gen mocks
 	mockery
+
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
