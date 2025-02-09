@@ -1,3 +1,4 @@
+//go:generate go-enum --marshal
 package domain
 
 import "time"
@@ -13,7 +14,11 @@ type CreateRespDto struct {
 	ShortUrl string
 }
 
+// ENUM(Normal, NotFound, Expired)
+type GetRespStatus string
+
 type GetRespDto struct {
+	Status    GetRespStatus
 	Url       string
 	ExpiredAt time.Time
 }

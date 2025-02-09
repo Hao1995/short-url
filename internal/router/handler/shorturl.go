@@ -61,12 +61,13 @@ func (hlr *ShortUrlHandler) Get(c *gin.Context) {
 
 	obj, err := hlr.uc.Get(c.Request.Context(), req.ID)
 	if err != nil {
-		if err == domain.ErrExpired || err == domain.ErrRecordNotFound {
-			log.Printf("handler.Get. failed to get url: %s", err)
-			c.JSON(http.StatusNotFound, gin.H{"error": ErrNotFound.Error()})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": ErrInternalServerError.Error()})
+		return
+	}
+
+	if obj.Status == domain.GetRespStatusNotFound || obj.Status == domain.GetRespStatusExpired {
+		log.Printf("handler.Get. get abnormal status: %s, return 404", obj.Status)
+		c.JSON(http.StatusNotFound, gin.H{"error": ErrNotFound.Error()})
 		return
 	}
 

@@ -23,6 +23,8 @@ type ShortUrlHandlerTestSuite struct {
 	suite.Suite
 	ginEngine *gin.Engine
 
+	now time.Time
+
 	uc   *usecase.UseCase
 	impl *ShortUrlHandler
 }
@@ -32,6 +34,8 @@ func TestShortUrlHandlerTestSuite(t *testing.T) {
 }
 
 func (s *ShortUrlHandlerTestSuite) SetupSuite() {
+	s.now = time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC)
+
 	s.uc = usecase.NewUseCase(s.T())
 	s.impl = NewShortUrlHandler(s.uc)
 
@@ -62,12 +66,12 @@ func (s *ShortUrlHandlerTestSuite) TestCreate() {
 			name: "create record successfully",
 			req: &request.ShortUrlCreateRequest{
 				Url:       "https://example.com/whatever1",
-				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				ExpiredAt: s.now,
 			},
 			setup: func() {
 				s.uc.On("Create", mock.Anything, &domain.CreateReqDto{
 					Url:       "https://example.com/whatever1",
-					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+					ExpiredAt: s.now,
 				}).Once().Return(&domain.CreateRespDto{
 					TargetID: "testid1",
 					ShortUrl: "http://localhost/testid1",
@@ -86,12 +90,12 @@ func (s *ShortUrlHandlerTestSuite) TestCreate() {
 			name: "failed to create a short url",
 			req: &request.ShortUrlCreateRequest{
 				Url:       "https://example.com/whatever1",
-				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				ExpiredAt: s.now,
 			},
 			setup: func() {
 				s.uc.On("Create", mock.Anything, &domain.CreateReqDto{
 					Url:       "https://example.com/whatever1",
-					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+					ExpiredAt: s.now,
 				}).Once().Return(nil, errors.New("whatever"))
 			},
 			expCode: 500,
@@ -130,7 +134,11 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 			setup: func() {
 				s.uc.On("Get", mock.Anything, "whatever1").
 					Once().
-					Return(&domain.GetRespDto{Url: "https://example.com/whatever1"}, nil)
+					Return(&domain.GetRespDto{
+						Status:    domain.GetRespStatusNormal,
+						Url:       "https://example.com/whatever1",
+						ExpiredAt: s.now,
+					}, nil)
 			},
 			expCode:     302,
 			expResp:     "<a href=\"https://example.com/whatever1\">Found</a>.\n\n",
@@ -142,7 +150,11 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 			setup: func() {
 				s.uc.On("Get", mock.Anything, "whatever1").
 					Once().
-					Return(nil, domain.ErrRecordNotFound)
+					Return(&domain.GetRespDto{
+						Status:    domain.GetRespStatusNotFound,
+						Url:       "",
+						ExpiredAt: time.Time{},
+					}, nil)
 			},
 			expCode:     404,
 			expResp:     fmt.Sprintf("{\"error\":\"%s\"}", "not found"),
@@ -154,7 +166,11 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 			setup: func() {
 				s.uc.On("Get", mock.Anything, "whatever1").
 					Once().
-					Return(nil, domain.ErrExpired)
+					Return(&domain.GetRespDto{
+						Status:    domain.GetRespStatusExpired,
+						Url:       "https://example.com/whatever1",
+						ExpiredAt: s.now,
+					}, nil)
 			},
 			expCode:     404,
 			expResp:     fmt.Sprintf("{\"error\":\"%s\"}", "not found"),

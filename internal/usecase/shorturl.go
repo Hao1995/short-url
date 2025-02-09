@@ -9,6 +9,7 @@ import (
 
 	"github.com/Hao1995/short-url/internal/domain"
 	"github.com/caarlos0/env/v11"
+	"github.com/viney-shih/go-cache"
 )
 
 var cfg config
@@ -25,18 +26,20 @@ func init() {
 
 var (
 	now = func() time.Time {
-		return time.Now().UTC()
+		return time.Now()
 	}
 )
 
 type ShortUrlUseCase struct {
 	repo Repository
+	c    cache.Cache
 }
 
 // NewShortUrlUseCase generates the use case implementation of the ShortUrl use case interface
-func NewShortUrlUseCase(repo Repository) UseCase {
+func NewShortUrlUseCase(repo Repository, c cache.Cache) UseCase {
 	return &ShortUrlUseCase{
 		repo: repo,
+		c:    c,
 	}
 }
 
@@ -55,14 +58,26 @@ func (uc *ShortUrlUseCase) Create(ctx context.Context, CreateReqDto *domain.Crea
 
 // Get gets short url record by id
 func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (*domain.GetRespDto, error) {
-	obj, err := uc.repo.Get(ctx, id)
-	if err != nil {
+	cacheObj := &domain.GetRespDto{}
+	if err := uc.c.GetByFunc(ctx, domain.CACHE_PREFIX_SHORT_URL, id, cacheObj, func() (interface{}, error) {
+		obj, err := uc.repo.Get(ctx, id)
+		if err == domain.ErrRecordNotFound {
+			obj = &domain.GetRespDto{Status: domain.GetRespStatusNotFound}
+		} else if err != nil {
+			return nil, err
+		} else {
+			obj.Status = domain.GetRespStatusNormal
+		}
+		return obj, nil
+	}); err != nil {
 		return nil, err
 	}
 
-	if obj.ExpiredAt.Before(now()) {
-		return nil, domain.ErrExpired
+	if cacheObj.Status == domain.GetRespStatusNormal {
+		if cacheObj.ExpiredAt.Before(now()) {
+			cacheObj.Status = domain.GetRespStatusExpired
+		}
 	}
 
-	return obj, nil
+	return cacheObj, nil
 }

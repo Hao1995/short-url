@@ -26,10 +26,10 @@ const (
 type ShortUrlTestSuite struct {
 	suite.Suite
 	dockertestClose func() error
-	db              *gorm.DB
 
 	now time.Time
 
+	db   *gorm.DB
 	impl usecase.Repository
 }
 
@@ -55,15 +55,15 @@ func (s *ShortUrlTestSuite) SetupSuite() {
 		log.Fatal("failed to init GORM connection", err)
 	}
 
-	s.impl = NewShortUrlRepository(s.db)
-}
-
-func (s *ShortUrlTestSuite) SetupTest() {
 	s.now = time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC)
 	now = func() time.Time {
 		return s.now
 	}
+
+	s.impl = NewShortUrlRepository(s.db)
 }
+
+func (s *ShortUrlTestSuite) SetupTest() {}
 
 func (s *ShortUrlTestSuite) TearDownSubTest() {
 	s.db.Where("1=1").Delete(&ShortUrl{})
@@ -92,7 +92,7 @@ func (s *ShortUrlTestSuite) TestCreate() {
 			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever1",
 				TargetID:  "testid1",
-				ExpiredAt: now(),
+				ExpiredAt: s.now,
 			},
 			expID:  "testid1",
 			expErr: nil,
@@ -103,15 +103,15 @@ func (s *ShortUrlTestSuite) TestCreate() {
 				shortUrl := ShortUrl{
 					Url:       "https://example.com/whatever1",
 					TargetID:  "testid1",
-					ExpiredAt: now(),
-					CreatedAt: now(),
+					ExpiredAt: s.now,
+					CreatedAt: s.now,
 				}
 				s.Suite.Nil(s.db.Create(&shortUrl).Error)
 			},
 			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever2",
 				TargetID:  "testid1",
-				ExpiredAt: now(),
+				ExpiredAt: s.now,
 			},
 			expID:  "",
 			expErr: domain.ErrDuplicatedKey,
@@ -177,7 +177,6 @@ func (s *ShortUrlTestSuite) TestGet() {
 
 func ConnectToDockerTestDB() (string, func() error, error) {
 	// Set up test db
-	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		return "", nil, fmt.Errorf("Could not construct pool: %s", err)
@@ -198,7 +197,6 @@ func ConnectToDockerTestDB() (string, func() error, error) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	var dsn string
 	if err := pool.Retry(func() error {
-		// https://gorm.io/docs/connecting_to_the_database.html#MySQL
 		var err error
 		dsn = fmt.Sprintf("root:%s@tcp(localhost:%s)/mysql?charset=utf8mb4&parseTime=True&loc=UTC", DB_PASSWORD, resource.GetPort("3306/tcp"))
 		db, err := sql.Open("mysql", dsn)
