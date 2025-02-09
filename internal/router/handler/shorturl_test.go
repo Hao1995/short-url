@@ -87,6 +87,12 @@ func (s *ShortUrlHandlerTestSuite) TestCreate() {
 			expResp: fmt.Sprintf("{\"error\":\"%s\"}", "unprocessable entity"),
 		},
 		{
+			name:    "invalid url format",
+			req:     &request.ShortUrlCreateRequest{Url: "whatever", ExpireAt: s.now},
+			expCode: 422,
+			expResp: fmt.Sprintf("{\"error\":\"%s\"}", "unprocessable entity"),
+		},
+		{
 			name: "failed to create a short url",
 			req: &request.ShortUrlCreateRequest{
 				Url:      "https://example.com/whatever1",

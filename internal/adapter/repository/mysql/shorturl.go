@@ -57,10 +57,6 @@ func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.Get
 			return nil, domain.ErrRecordNotFound
 		}
 
-		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return nil, domain.ErrDuplicatedKey
-		}
-
 		log.Printf("failed to get short_url by id(%s): %s", id, result.Error)
 		return nil, result.Error
 	}
