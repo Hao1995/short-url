@@ -70,6 +70,7 @@ func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (*domain.GetRespD
 		}
 		return obj, nil
 	}); err != nil {
+		log.Print("ShortUrlUseCase.Get. Failed to get the short_url from cache: ", err)
 		return nil, err
 	}
 

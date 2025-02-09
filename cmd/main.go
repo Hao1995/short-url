@@ -1,18 +1,23 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	repo "github.com/Hao1995/short-url/internal/adapter/repository/mysql"
+	"github.com/Hao1995/short-url/internal/domain"
 	"github.com/Hao1995/short-url/internal/router/handler"
 	"github.com/Hao1995/short-url/internal/usecase"
 	"github.com/Hao1995/short-url/pkg/migrationkit"
+
 	"github.com/fvbock/endless"
+	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
+	"github.com/viney-shih/go-cache"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -51,9 +56,26 @@ func main() {
 	}()
 	log.Print("Connect to the DB successfully")
 
+	// Init Cache
+	tinyLfu := cache.NewTinyLFU(10000)
+	rds := cache.NewRedis(redis.NewRing(&redis.RingOptions{Addrs: cfg.Redis.Addrs}))
+	cacheFactory := cache.NewFactory(rds, tinyLfu)
+
+	c := cacheFactory.NewCache([]cache.Setting{
+		{
+			Prefix: domain.CACHE_PREFIX_SHORT_URL,
+			CacheAttributes: map[cache.Type]cache.Attribute{
+				cache.SharedCacheType: {TTL: time.Hour},
+				cache.LocalCacheType:  {TTL: 10 * time.Second},
+			},
+			MarshalFunc:   json.Marshal,
+			UnmarshalFunc: json.Unmarshal,
+		},
+	})
+
 	// DI
 	repoImpl := repo.NewShortUrlRepository(db)
-	ucImpl := usecase.NewShortUrlUseCase(repoImpl)
+	ucImpl := usecase.NewShortUrlUseCase(repoImpl, c)
 	hlrImpl := handler.NewShortUrlHandler(ucImpl)
 
 	// Run server

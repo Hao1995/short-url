@@ -8,9 +8,17 @@ import (
 
 var cfg Config
 
+func init() {
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatal("failed to parse config", err)
+	}
+	log.Print("cfg: ", cfg)
+}
+
 type Config struct {
 	App   App   `envPrefix:"APP_"`
 	MySQL MySQL `envPrefix:"MYSQL_"`
+	Redis Redis `envPrefix:"REDIS_"`
 }
 
 type App struct {
@@ -27,9 +35,6 @@ type MySQL struct {
 	DB       string `env:"DB,required" envDefault:"short_url"`
 }
 
-func init() {
-	if err := env.Parse(&cfg); err != nil {
-		log.Fatal("failed to parse config", err)
-	}
-	log.Print("cfg: ", cfg)
+type Redis struct {
+	Addrs map[string]string `env:"ADDRS" envSeparator:"-" envKeyValSeparator:"|" envDefault:"server1|redis:6379"`
 }

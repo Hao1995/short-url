@@ -11,7 +11,10 @@ RUN go mod download && go mod verify
 COPY pkg ./pkg
 COPY database ./database
 COPY cmd ./cmd
-COPY internal ./internal
+COPY internal/router ./internal/router
+COPY internal/adapter ./internal/adapter
+COPY internal/usecase ./internal/usecase
+COPY internal/domain ./internal/domain
 
 RUN go build -o app ./cmd
 
