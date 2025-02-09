@@ -2,11 +2,10 @@
 A short url service
 
 ## Prerequisite
-Install docker.
-
+### Docker
 Follow the instruction on the official page: https://docs.docker.com/desktop/setup/install/mac-install/
 
-Test
+Check successful installation
 ```
 docker version
 docker-compose version
