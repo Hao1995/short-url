@@ -4,9 +4,9 @@ package domain
 import "time"
 
 type CreateReqDto struct {
-	Url       string
-	TargetID  string
-	ExpiredAt time.Time
+	Url      string
+	TargetID string
+	ExpireAt time.Time
 }
 
 type CreateRespDto struct {
@@ -18,7 +18,7 @@ type CreateRespDto struct {
 type GetRespStatus string
 
 type GetRespDto struct {
-	Status    GetRespStatus
-	Url       string
-	ExpiredAt time.Time
+	Status   GetRespStatus
+	Url      string
+	ExpireAt time.Time
 }

@@ -115,15 +115,15 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 		{
 			name: "create a record successfully",
 			req: &domain.CreateReqDto{
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				Url:      "https://example.com/whatever1",
+				ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 			},
 			setup: func() {
 				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1")))
 				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
-					Url:       "https://example.com/whatever1",
-					TargetID:  targetID,
-					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+					Url:      "https://example.com/whatever1",
+					TargetID: targetID,
+					ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("testid1", nil)
 			},
 			exp: &domain.CreateRespDto{
@@ -135,16 +135,16 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 		{
 			name: "create a duplicated record successfully",
 			req: &domain.CreateReqDto{
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				Url:      "https://example.com/whatever1",
+				ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 			},
 			setup: func() {
 				// the first record
 				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1")))
 				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
-					Url:       "https://example.com/whatever1",
-					TargetID:  targetID,
-					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+					Url:      "https://example.com/whatever1",
+					TargetID: targetID,
+					ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("", domain.ErrDuplicatedKey)
 
 				// added suffix record
@@ -154,9 +154,9 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 				}
 				targetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1"+suffix)))
 				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
-					Url:       "https://example.com/whatever1",
-					TargetID:  targetID,
-					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+					Url:      "https://example.com/whatever1",
+					TargetID: targetID,
+					ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("testid2", nil)
 			},
 			exp: &domain.CreateRespDto{
@@ -168,16 +168,16 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 		{
 			name: "failed to create a record due to unknown error",
 			req: &domain.CreateReqDto{
-				Url:       "https://example.com/whatever2",
-				TargetID:  "testid1",
-				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				Url:      "https://example.com/whatever2",
+				TargetID: "testid1",
+				ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 			},
 			setup: func() {
 				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever2")))
 				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
-					Url:       "https://example.com/whatever2",
-					TargetID:  targetID,
-					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+					Url:      "https://example.com/whatever2",
+					TargetID: targetID,
+					ExpireAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
 				}).Once().Return("", errors.New("unknown error"))
 			},
 			exp:    nil,
@@ -210,8 +210,8 @@ func (s *ShortUrlUseCaseTestSuite) TestGet() {
 			req:  "testid1",
 			setup: func() {
 				s.repo.On("Get", s.ctx, "testid1").Once().Return(&domain.GetRespDto{
-					Url:       "https://example.com/whatever1",
-					ExpiredAt: s.now,
+					Url:      "https://example.com/whatever1",
+					ExpireAt: s.now,
 				}, nil)
 			},
 			check: func() {
@@ -224,15 +224,15 @@ func (s *ShortUrlUseCaseTestSuite) TestGet() {
 				var obj domain.GetRespDto
 				s.NoError(json.Unmarshal(b, &obj))
 				s.Equal(&domain.GetRespDto{
-					Status:    domain.GetRespStatusNormal,
-					Url:       "https://example.com/whatever1",
-					ExpiredAt: s.now,
+					Status:   domain.GetRespStatusNormal,
+					Url:      "https://example.com/whatever1",
+					ExpireAt: s.now,
 				}, &obj)
 			},
 			expObj: &domain.GetRespDto{
-				Status:    domain.GetRespStatusNormal,
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: s.now,
+				Status:   domain.GetRespStatusNormal,
+				Url:      "https://example.com/whatever1",
+				ExpireAt: s.now,
 			},
 			expErr: nil,
 		},
@@ -254,9 +254,9 @@ func (s *ShortUrlUseCaseTestSuite) TestGet() {
 				s.Equal(&domain.GetRespDto{Status: domain.GetRespStatusNotFound}, &obj)
 			},
 			expObj: &domain.GetRespDto{
-				Status:    domain.GetRespStatusNotFound,
-				Url:       "",
-				ExpiredAt: time.Time{},
+				Status:   domain.GetRespStatusNotFound,
+				Url:      "",
+				ExpireAt: time.Time{},
 			},
 			expErr: nil,
 		},
@@ -265,8 +265,8 @@ func (s *ShortUrlUseCaseTestSuite) TestGet() {
 			req:  "testid1",
 			setup: func() {
 				s.repo.On("Get", s.ctx, "testid1").Once().Return(&domain.GetRespDto{
-					Url:       "https://example.com/whatever1",
-					ExpiredAt: s.now.Add(-1 * time.Second),
+					Url:      "https://example.com/whatever1",
+					ExpireAt: s.now.Add(-1 * time.Second),
 				}, nil)
 			},
 			check: func() {
@@ -279,15 +279,15 @@ func (s *ShortUrlUseCaseTestSuite) TestGet() {
 				var obj domain.GetRespDto
 				s.NoError(json.Unmarshal(b, &obj))
 				s.Equal(&domain.GetRespDto{
-					Status:    domain.GetRespStatusNormal,
-					Url:       "https://example.com/whatever1",
-					ExpiredAt: s.now.Add(-1 * time.Second),
+					Status:   domain.GetRespStatusNormal,
+					Url:      "https://example.com/whatever1",
+					ExpireAt: s.now.Add(-1 * time.Second),
 				}, &obj)
 			},
 			expObj: &domain.GetRespDto{
-				Status:    domain.GetRespStatusExpired,
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: s.now.Add(-1 * time.Second),
+				Status:   domain.GetRespStatusExpired,
+				Url:      "https://example.com/whatever1",
+				ExpireAt: s.now.Add(-1 * time.Second),
 			},
 			expErr: nil,
 		},

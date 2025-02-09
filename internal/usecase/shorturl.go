@@ -89,7 +89,7 @@ func (uc *ShortUrlUseCase) Get(ctx context.Context, id string) (*domain.GetRespD
 	}
 
 	if cacheObj.Status == domain.GetRespStatusNormal {
-		if cacheObj.ExpiredAt.Before(now()) {
+		if cacheObj.ExpireAt.Before(now()) {
 			cacheObj.Status = domain.GetRespStatusExpired
 		}
 	}

@@ -90,9 +90,9 @@ func (s *ShortUrlTestSuite) TestCreate() {
 		{
 			name: "create record successfully",
 			req: &domain.CreateReqDto{
-				Url:       "https://example.com/whatever1",
-				TargetID:  "testid1",
-				ExpiredAt: s.now,
+				Url:      "https://example.com/whatever1",
+				TargetID: "testid1",
+				ExpireAt: s.now,
 			},
 			expID:  "testid1",
 			expErr: nil,
@@ -103,15 +103,15 @@ func (s *ShortUrlTestSuite) TestCreate() {
 				shortUrl := ShortUrl{
 					Url:       "https://example.com/whatever1",
 					TargetID:  "testid1",
-					ExpiredAt: s.now,
+					ExpireAt:  s.now,
 					CreatedAt: s.now,
 				}
 				s.Suite.Nil(s.db.Create(&shortUrl).Error)
 			},
 			req: &domain.CreateReqDto{
-				Url:       "https://example.com/whatever2",
-				TargetID:  "testid1",
-				ExpiredAt: s.now,
+				Url:      "https://example.com/whatever2",
+				TargetID: "testid1",
+				ExpireAt: s.now,
 			},
 			expID:  "",
 			expErr: domain.ErrDuplicatedKey,
@@ -143,7 +143,7 @@ func (s *ShortUrlTestSuite) TestGet() {
 				shortUrl := ShortUrl{
 					Url:       "https://example.com/whatever1",
 					TargetID:  "testid1",
-					ExpiredAt: s.now,
+					ExpireAt:  s.now,
 					CreatedAt: s.now,
 				}
 				s.Suite.Nil(s.db.Create(&shortUrl).Error)
@@ -151,8 +151,8 @@ func (s *ShortUrlTestSuite) TestGet() {
 			},
 			req: "testid1",
 			exp: &domain.GetRespDto{
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: s.now,
+				Url:      "https://example.com/whatever1",
+				ExpireAt: s.now,
 			},
 			expErr: nil,
 		},

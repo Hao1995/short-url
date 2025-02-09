@@ -33,7 +33,7 @@ func (repo *ShortUrlRepository) Create(ctx context.Context, CreateReqDto *domain
 	record := ShortUrl{
 		Url:       CreateReqDto.Url,
 		TargetID:  CreateReqDto.TargetID,
-		ExpiredAt: CreateReqDto.ExpiredAt,
+		ExpireAt:  CreateReqDto.ExpireAt,
 		CreatedAt: now(),
 	}
 
@@ -51,7 +51,7 @@ func (repo *ShortUrlRepository) Create(ctx context.Context, CreateReqDto *domain
 // Get gets short url record by id
 func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.GetRespDto, error) {
 	var record ShortUrl
-	result := repo.db.Where("target_id = ?", id).Select([]string{"url", "expired_at"}).First(&record)
+	result := repo.db.Where("target_id = ?", id).Select([]string{"url", "expire_at"}).First(&record)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrRecordNotFound
@@ -67,7 +67,7 @@ func (repo *ShortUrlRepository) Get(ctx context.Context, id string) (*domain.Get
 	log.Printf("get url `%s` by id `%s`", record.Url, id)
 
 	return &domain.GetRespDto{
-		Url:       record.Url,
-		ExpiredAt: record.ExpiredAt,
+		Url:      record.Url,
+		ExpireAt: record.ExpireAt,
 	}, nil
 }

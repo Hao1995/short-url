@@ -9,6 +9,6 @@ type ShortUrl struct {
 	ID        uint `gorm:"primaryKey, autoIncrement"`
 	Url       string
 	TargetID  string `gorm:"uniqueIndex"`
-	ExpiredAt time.Time
+	ExpireAt  time.Time
 	CreatedAt time.Time
 }

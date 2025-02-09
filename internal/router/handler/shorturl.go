@@ -37,7 +37,7 @@ func (hlr *ShortUrlHandler) Create(c *gin.Context) {
 		return
 	}
 
-	obj, err := hlr.uc.Create(c.Request.Context(), &domain.CreateReqDto{Url: req.Url, ExpiredAt: req.ExpiredAt})
+	obj, err := hlr.uc.Create(c.Request.Context(), &domain.CreateReqDto{Url: req.Url, ExpireAt: req.ExpireAt})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": ErrInternalServerError.Error()})
 		return

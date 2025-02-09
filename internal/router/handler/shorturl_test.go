@@ -65,13 +65,13 @@ func (s *ShortUrlHandlerTestSuite) TestCreate() {
 		{
 			name: "create record successfully",
 			req: &request.ShortUrlCreateRequest{
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: s.now,
+				Url:      "https://example.com/whatever1",
+				ExpireAt: s.now,
 			},
 			setup: func() {
 				s.uc.On("Create", mock.Anything, &domain.CreateReqDto{
-					Url:       "https://example.com/whatever1",
-					ExpiredAt: s.now,
+					Url:      "https://example.com/whatever1",
+					ExpireAt: s.now,
 				}).Once().Return(&domain.CreateRespDto{
 					TargetID: "testid1",
 					ShortUrl: "http://localhost/testid1",
@@ -89,13 +89,13 @@ func (s *ShortUrlHandlerTestSuite) TestCreate() {
 		{
 			name: "failed to create a short url",
 			req: &request.ShortUrlCreateRequest{
-				Url:       "https://example.com/whatever1",
-				ExpiredAt: s.now,
+				Url:      "https://example.com/whatever1",
+				ExpireAt: s.now,
 			},
 			setup: func() {
 				s.uc.On("Create", mock.Anything, &domain.CreateReqDto{
-					Url:       "https://example.com/whatever1",
-					ExpiredAt: s.now,
+					Url:      "https://example.com/whatever1",
+					ExpireAt: s.now,
 				}).Once().Return(nil, errors.New("whatever"))
 			},
 			expCode: 500,
@@ -135,9 +135,9 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 				s.uc.On("Get", mock.Anything, "whatever1").
 					Once().
 					Return(&domain.GetRespDto{
-						Status:    domain.GetRespStatusNormal,
-						Url:       "https://example.com/whatever1",
-						ExpiredAt: s.now,
+						Status:   domain.GetRespStatusNormal,
+						Url:      "https://example.com/whatever1",
+						ExpireAt: s.now,
 					}, nil)
 			},
 			expCode:     302,
@@ -151,9 +151,9 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 				s.uc.On("Get", mock.Anything, "whatever1").
 					Once().
 					Return(&domain.GetRespDto{
-						Status:    domain.GetRespStatusNotFound,
-						Url:       "",
-						ExpiredAt: time.Time{},
+						Status:   domain.GetRespStatusNotFound,
+						Url:      "",
+						ExpireAt: time.Time{},
 					}, nil)
 			},
 			expCode:     404,
@@ -167,9 +167,9 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 				s.uc.On("Get", mock.Anything, "whatever1").
 					Once().
 					Return(&domain.GetRespDto{
-						Status:    domain.GetRespStatusExpired,
-						Url:       "https://example.com/whatever1",
-						ExpiredAt: s.now,
+						Status:   domain.GetRespStatusExpired,
+						Url:      "https://example.com/whatever1",
+						ExpireAt: s.now,
 					}, nil)
 			},
 			expCode:     404,
