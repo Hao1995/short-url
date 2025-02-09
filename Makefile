@@ -13,6 +13,9 @@ generate:
 	# gen mocks
 	mockery
 
+test:
+	go test --race ./...
+
 up:
 	docker compose up --build -d
 
