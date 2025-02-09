@@ -19,6 +19,7 @@ type Config struct {
 	App   App   `envPrefix:"APP_"`
 	MySQL MySQL `envPrefix:"MYSQL_"`
 	Redis Redis `envPrefix:"REDIS_"`
+	Cache Cache `envPrefix:"CACHE_"`
 }
 
 type App struct {
@@ -37,4 +38,10 @@ type MySQL struct {
 
 type Redis struct {
 	Addrs map[string]string `env:"ADDRS" envSeparator:"-" envKeyValSeparator:"|" envDefault:"server1|redis:6379"`
+}
+
+type Cache struct {
+	Size      int `env:"SIZE,required" envDefault:"10000"`
+	LocalTTL  int `env:"LOCAL_TTL,required" envDefault:"600"`
+	SharedTTL int `env:"SHARED_TTL,required" envDefault:"3600"`
 }

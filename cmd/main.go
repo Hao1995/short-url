@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -42,9 +43,18 @@ func main() {
 	}
 
 	// Init DB connection
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{TranslateError: true})
+	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("failed to connect to DB: %s", err)
+	}
+	sqlDB.SetMaxIdleConns(100)
+	sqlDB.SetMaxOpenConns(500)
+
+	db, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{TranslateError: true})
+	if err != nil {
+		log.Fatalf("failed to init to Gorm client: %s", err)
 	}
 	defer func() {
 		sqlDB, err := db.DB()
@@ -57,7 +67,7 @@ func main() {
 	log.Print("Connect to the DB successfully")
 
 	// Init Cache
-	tinyLfu := cache.NewTinyLFU(10000)
+	tinyLfu := cache.NewTinyLFU(cfg.Cache.Size)
 	rds := cache.NewRedis(redis.NewRing(&redis.RingOptions{Addrs: cfg.Redis.Addrs}))
 	cacheFactory := cache.NewFactory(rds, tinyLfu)
 
@@ -65,8 +75,8 @@ func main() {
 		{
 			Prefix: domain.CACHE_PREFIX_SHORT_URL,
 			CacheAttributes: map[cache.Type]cache.Attribute{
-				cache.SharedCacheType: {TTL: time.Hour},
-				cache.LocalCacheType:  {TTL: 10 * time.Second},
+				cache.SharedCacheType: {TTL: time.Duration(cfg.Cache.SharedTTL) * time.Second},
+				cache.LocalCacheType:  {TTL: time.Duration(cfg.Cache.LocalTTL) * time.Second},
 			},
 			MarshalFunc:   json.Marshal,
 			UnmarshalFunc: json.Unmarshal,
