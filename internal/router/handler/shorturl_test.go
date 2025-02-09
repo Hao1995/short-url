@@ -135,7 +135,7 @@ func (s *ShortUrlHandlerTestSuite) TestGet() {
 		expErr      error
 	}{
 		{
-			name: "create record successfully",
+			name: "get record successfully",
 			req:  &request.ShortUrlGetRequest{ID: "whatever1"},
 			setup: func() {
 				s.uc.On("Get", mock.Anything, "whatever1").
