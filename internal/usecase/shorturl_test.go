@@ -113,7 +113,7 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 		expErr error
 	}{
 		{
-			name: "create record successfully",
+			name: "create a record successfully",
 			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever1",
 				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
@@ -133,7 +133,40 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 			expErr: nil,
 		},
 		{
-			name: "failed to create record due to duplicated target_id",
+			name: "create a duplicated record successfully",
+			req: &domain.CreateReqDto{
+				Url:       "https://example.com/whatever1",
+				ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+			},
+			setup: func() {
+				// the first record
+				targetID := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1")))
+				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
+					Url:       "https://example.com/whatever1",
+					TargetID:  targetID,
+					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				}).Once().Return("", domain.ErrDuplicatedKey)
+
+				// added suffix record
+				suffix := "whatever"
+				randString = func() string {
+					return suffix
+				}
+				targetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte("https://example.com/whatever1"+suffix)))
+				s.repo.On("Create", s.ctx, &domain.CreateReqDto{
+					Url:       "https://example.com/whatever1",
+					TargetID:  targetID,
+					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
+				}).Once().Return("testid2", nil)
+			},
+			exp: &domain.CreateRespDto{
+				TargetID: "testid2",
+				ShortUrl: "http://localhost/testid2",
+			},
+			expErr: nil,
+		},
+		{
+			name: "failed to create a record due to unknown error",
 			req: &domain.CreateReqDto{
 				Url:       "https://example.com/whatever2",
 				TargetID:  "testid1",
@@ -145,10 +178,10 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 					Url:       "https://example.com/whatever2",
 					TargetID:  targetID,
 					ExpiredAt: time.Date(2025, 2, 10, 8, 30, 15, 0, time.UTC),
-				}).Once().Return("", domain.ErrDuplicatedKey)
+				}).Once().Return("", errors.New("unknown error"))
 			},
 			exp:    nil,
-			expErr: domain.ErrDuplicatedKey,
+			expErr: errors.New("unknown error"),
 		},
 	} {
 		s.Suite.Run(t.name, func() {
@@ -157,7 +190,7 @@ func (s *ShortUrlUseCaseTestSuite) TestCreate() {
 				t.setup()
 			}
 			id, err := s.impl.Create(ctx, t.req)
-			s.ErrorIs(err, t.expErr)
+			s.Equal(err, t.expErr)
 			s.Equal(t.exp, id)
 		})
 	}

@@ -8,15 +8,22 @@ import (
 	"time"
 
 	"github.com/Hao1995/short-url/internal/domain"
+	"github.com/Hao1995/short-url/pkg/migrationkit/randkit"
 	"github.com/caarlos0/env/v11"
 	"github.com/viney-shih/go-cache"
 )
 
-var cfg config
+var (
+	now = func() time.Time {
+		return time.Now()
+	}
 
-type config struct {
-	AppHost string `env:"APP_HOST" envDefault:"http://localhost"`
-}
+	randString = func() string {
+		return randkit.String(4)
+	}
+
+	cfg config
+)
 
 func init() {
 	if err := env.Parse(&cfg); err != nil {
@@ -24,12 +31,9 @@ func init() {
 	}
 }
 
-var (
-	now = func() time.Time {
-		return time.Now()
-	}
-)
-
+type config struct {
+	AppHost string `env:"APP_HOST" envDefault:"http://localhost"`
+}
 type ShortUrlUseCase struct {
 	repo Repository
 	c    cache.Cache
@@ -44,11 +48,21 @@ func NewShortUrlUseCase(repo Repository, c cache.Cache) UseCase {
 }
 
 // Create creates short_url record and return short url id
-func (uc *ShortUrlUseCase) Create(ctx context.Context, CreateReqDto *domain.CreateReqDto) (*domain.CreateRespDto, error) {
-	CreateReqDto.TargetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(CreateReqDto.Url)))
-	id, err := uc.repo.Create(ctx, CreateReqDto)
-	if err != nil {
-		return nil, err
+func (uc *ShortUrlUseCase) Create(ctx context.Context, createReqDto *domain.CreateReqDto) (*domain.CreateRespDto, error) {
+	var id string
+	url := createReqDto.Url
+	for {
+		var err error
+		createReqDto.TargetID = fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(url)))
+		id, err = uc.repo.Create(ctx, createReqDto)
+		if err == domain.ErrDuplicatedKey {
+			url += randString() // 62^4=14M possibilities
+			log.Print("Append random suffix", url)
+		} else if err != nil {
+			return nil, err
+		} else {
+			break
+		}
 	}
 	return &domain.CreateRespDto{
 		TargetID: id,
